@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - جميع الشكاوى</title>
+    <style>
+        /* نفس CSS من ملفك الأصلي */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #1a5f8c;
+            margin-bottom: 25px;
+        }
+        #message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            display: none;
+        }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #1a5f8c;
+            color: white;
+        }
+        tbody tr {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        tbody tr:hover {
+            background-color: #f1f8ff;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+        }
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #1a5f8c;
+            font-weight: bold;
+        }
+        .detail-row {
+            display: flex;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #1a5f8c;
+            min-width: 180px;
+        }
+        .detail-value {
+            flex: 1;
+            color: #333;
+        }
+        select, textarea, button {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .comment-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        .comment {
+            background: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .back-btn, .save-btn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .back-btn {
+            background: #6c757d;
+            color: white;
+        }
+        .save-btn {
+            background: #28a745;
+            color: white;
+        }
+        .back-btn:hover { background: #5a6268; }
+        .save-btn:hover { background: #218838; }
+        .save-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .action-message {
+            padding: 8px;
+            margin: 8px 0;
+            border-radius: 4px;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>لوحة التحكم - جميع الشكاوى</h2>
+        <div id="message"></div>
+        <div id="complaintsTable"></div>
+    </div>
+
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h3 style="text-align:center; color:#1a5f8c;">تفاصيل الشكوى</h3>
+            <div id="complaintDetails"></div>
+            <div id="editSection"></div>
+            <button class="back-btn" onclick="closeModal()">إغلاق</button>
+        </div>
+    </div>
+
+    <script>
+// ✅ تأكد من عدم وجود مسافات في الرابط!
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyqMjxBfNit0ihi5D_Jd7tLYeqCzd9aqeC98bl_ixt3UUwgdT3PWfAh2tTYPucdl8E3GA/exec";
+
+// دالة التحقق من انتهاء الجلسة
+function checkSessionExpiry() {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const lastActive = localStorage.getItem('lastActive');
+    const now = new Date().getTime();
+    const SESSION_TIMEOUT = 10 * 60 * 1000; // 30 دقيقة
+
+    if (!isLoggedIn || !lastActive) {
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('lastActive');
+        return false;
+    }
+
+    if (now - parseInt(lastActive) > SESSION_TIMEOUT) {
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('lastActive');
+        return false;
+    }
+
+    // تجديد وقت آخر نشاط
+    localStorage.setItem('lastActive', now.toString());
+    return true;
+}
+
+// التحقق من الجلسة عند تحميل الصفحة
+if (!checkSessionExpiry()) {
+    window.location.href = 'login.html';
+}
+
+        let allComplaints = [];
+        let headers = [];
+
+        window.addEventListener('load', loadAllComplaints);
+
+        async function loadAllComplaints() {
+            const msg = document.getElementById('message');
+            const tableDiv = document.getElementById('complaintsTable');
+
+            try {
+                const response = await fetch(`${WEB_APP_URL}?action=getAll`);
+                const data = await response.json();
+
+                if (data.success && data.complaints) {
+                    allComplaints = data.complaints;
+                    headers = data.headers || [];
+
+                    let html = `<h3>إجمالي الشكاوى: ${data.complaints.length}</h3><table><thead><tr>`;
+                    const cols = [0, 1, 2, 5, 6, 9];
+                    cols.forEach(i => {
+                        html += `<th>${headers[i] || `عمود ${i}`}</th>`;
+                    });
+                    html += `</tr></thead><tbody>`;
+
+                    data.complaints.forEach((complaint, index) => {
+                        html += `<tr onclick="showComplaintDetails(${index})">`;
+                        cols.forEach(i => {
+                            let cell = complaint[i] || '';
+                            if (i === 1 && cell) cell = new Date(cell).toLocaleString('ar-EG');
+                            if (i === 9) {
+                                cell = (() => {
+                                        let color;
+                                        if (cell === 'جارى العمل') {
+                                            color = '#ffc107'; // أو '#ffc107' للون أصفر ذهبي أنسب
+                                        } else if (cell === 'تم الحل') {
+                                            color = 'green';
+                                        } else if (cell === 'مغلقة') {
+                                            color = 'red';
+                                        } else {
+                                            color = 'inherit'; // الافتراضي إذا كانت حالة غير معروفة
+                                        }
+                                        return `<span style="color: ${color}; font-weight: bold;">${cell}</span>`;
+                                    })();
+                            }
+                            html += `<td>${cell}</td>`;
+                        });
+                        html += `</tr>`;
+                    });
+                    html += `</tbody></table>`;
+                    tableDiv.innerHTML = html;
+                } else {
+                    tableDiv.innerHTML = "<p>لا توجد شكاوى.</p>";
+                }
+            } catch (err) {
+                msg.innerHTML = "❌ خطأ في تحميل البيانات";
+                msg.className = "error";
+                msg.style.display = "block";
+            }
+        }
+
+        function showComplaintDetails(index) {
+            const complaint = allComplaints[index];
+            const rowId = complaint[0];
+
+            let detailsHTML = '';
+            for (let i = 0; i < 10; i++) {
+                const label = headers[i] || `الحقل ${i + 1}`;
+                const value = complaint[i] || 'غير متوفر';
+                detailsHTML += `
+                    <div class="detail-row">
+                        <div class="detail-label">${label}:</div>
+                        <div class="detail-value">${value}</div>
+                    </div>
+                `;
+            }
+
+            const editHTML = `
+                <div class="detail-row">
+                    <div class="detail-label">تعديل الحالة:</div>
+                    <div class="detail-value">
+                        <select id="statusSelect">
+                            <option value="جارى العمل" ${complaint[9] === 'جارى العمل' ? 'selected' : ''}>جارى العمل</option>
+                            <option value="تم الحل" ${complaint[9] === 'تم الحل' ? 'selected' : ''}>تم الحل</option>
+                            <option value="مغلقة" ${complaint[9] === 'مغلقة' ? 'selected' : ''}>مغلقة</option>
+                        </select>
+                        <div id="statusMessage" class="action-message"></div>
+                        <button class="save-btn" id="saveStatusBtn">حفظ الحالة</button>
+                    </div>
+                </div>
+
+                <div class="comment-section">
+                    <div class="detail-label">الإجراءات المتعلقة بالشكوى:   </div>
+<div id="commentsList">
+    ${(complaint[10] || []).length 
+        ? `
+            <table style="width:100%; border-collapse: collapse; margin-top:10px; font-size:14px;">
+                
+                <tbody>
+                    ${(complaint[10] || []).map(comment => {
+                        // دالة لتحويل الأرقام العربية إلى إنجليزية
+                        const toEnglishDigits = str => str.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d).toString());
+                        
+                        // تنظيف النص: استبدال الفاصلة العربية وتوحيد المسافات
+                        let clean = comment
+                            .replace(/،/g, ',')          // "،" → ","
+                            .replace(/\u200F/g, '')      // إزالة علامات الاتجاه (مثل ‏)
+                            .replace(/\s+/g, ' ')        // توحيد المسافات
+                            .trim();
+
+                        // محاولة استخراج الجزء الزمني (نفترض أنه بعد آخر " - ")
+                        const lastDash = clean.lastIndexOf(' - ');
+                        if (lastDash === -1) {
+                            return `<tr><td colspan="2" style="padding:10px; border:1px solid #ddd;">${comment}</td></tr>`;
+                        }
+
+                        const textPart = clean.substring(0, lastDash);
+                        let dateTimeStr = clean.substring(lastDash + 3); // تجاوز " - "
+
+                        // تحويل الأرقام
+                        dateTimeStr = toEnglishDigits(dateTimeStr);
+
+                        // محاولة استخراج يوم/شهر/سنة وساعة/دقيقة
+                        let engDateStr = 'غير معروف';
+                        try {
+                            // نمط متوقع: "13/10/2025, 7:26:59 م"
+                            const dateMatch = dateTimeStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4}),\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([ص|م])/);
+                            
+                            if (dateMatch) {
+                                const [, day, month, year, hour, minute, second = '0', period] = dateMatch;
+                                
+                                let h = parseInt(hour, 10);
+                                if (period === 'م' && h !== 12) h += 12;
+                                if (period === 'ص' && h === 12) h = 0;
+
+                                const dateObj = new Date(
+                                    parseInt(year, 10),
+                                    parseInt(month, 10) - 1, // الشهر يبدأ من 0
+                                    parseInt(day, 10),
+                                    h,
+                                    parseInt(minute, 10),
+                                    parseInt(second, 10)
+                                );
+
+                                if (isNaN(dateObj.getTime())) {
+                                    engDateStr = 'Invalid Date';
+                                } else {
+                                    engDateStr = dateObj.toLocaleString('en-US');
+                                }
+                            } else {
+                                engDateStr = 'تنسيق غير مدعوم';
+                            }
+                        } catch (e) {
+                            engDateStr = 'خطأ في التحليل';
+                        }
+
+                        return `
+                            <tr>
+                                <td style="padding:10px; border:1px solid #ddd; direction: ltr; font-family: monospace; width: 100px; white-space: nowrap;">${engDateStr}</td>
+                                <td style="padding:10px; border:1px solid #ddd;">${textPart}</td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>`
+        : '<em>لا توجد تعليقات</em>'
+    }
+</div>
+                    
+                    <div style="margin-top:15px;">
+                        <textarea id="newComment" placeholder="أضف تعليقًا جديدًا..." rows="3"></textarea>
+                        <div id="commentMessage" class="action-message"></div>
+                        <button class="save-btn" id="addCommentBtn">إضافة تعليق</button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('complaintDetails').innerHTML = detailsHTML;
+            document.getElementById('editSection').innerHTML = editHTML;
+            document.getElementById('detailModal').style.display = 'block';
+
+            // ربط الأحداث
+            document.getElementById('saveStatusBtn').addEventListener('click', () => {
+                updateStatus(rowId, index);
+            });
+
+            document.getElementById('addCommentBtn').addEventListener('click', () => {
+                addComment(rowId, index);
+            });
+        }
+
+        async function updateStatus(rowId, complaintIndex) {
+            const btn = document.getElementById('saveStatusBtn');
+            const msgDiv = document.getElementById('statusMessage');
+            const status = document.getElementById('statusSelect').value;
+
+            // تعطيل الزر ومنع التكرار
+            btn.disabled = true;
+            msgDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(`${WEB_APP_URL}?action=updateStatus&rowId=${encodeURIComponent(rowId)}&status=${encodeURIComponent(status)}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    msgDiv.innerHTML = "✅ تم تحديث الحالة بنجاح";
+                    msgDiv.className = "action-message success";
+                    msgDiv.style.display = "block";
+                    // تحديث الصفحة بعد 1.5 ثانية
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    throw new Error("فشل التحديث");
+                }
+            } catch (err) {
+                msgDiv.innerHTML = "❌ فشل تحديث الحالة";
+                msgDiv.className = "action-message error";
+                msgDiv.style.display = "block";
+                btn.disabled = false; // إعادة التفعيل عند الفشل
+            }
+        }
+
+        async function addComment(rowId, complaintIndex) {
+            const comment = document.getElementById('newComment').value.trim();
+            if (!comment) return;
+
+            const btn = document.getElementById('addCommentBtn');
+            const msgDiv = document.getElementById('commentMessage');
+            const textarea = document.getElementById('newComment');
+
+            btn.disabled = true;
+            msgDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(`${WEB_APP_URL}?action=addComment&rowId=${encodeURIComponent(rowId)}&comment=${encodeURIComponent(comment)}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    msgDiv.innerHTML = "✅ تم إضافة التعليق";
+                    msgDiv.className = "action-message success";
+                    msgDiv.style.display = "block";
+                    textarea.value = '';
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    throw new Error("فشل إضافة التعليق");
+                }
+            } catch (err) {
+                msgDiv.innerHTML = "❌ فشل إضافة التعليق";
+                msgDiv.className = "action-message error";
+                msgDiv.style.display = "block";
+                btn.disabled = false; // إعادة التفعيل عند الفشل
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('detailModal');
+            if (event.target === modal) closeModal();
+        };
+    </script>
+</body>
+</html>

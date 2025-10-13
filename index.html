@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منظومة الشكاوى الموحدة</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 500px;
+        }
+
+        h1 {
+            color: #1a5f8c;
+            margin-bottom: 20px;
+            font-size: 22px;
+            line-height: 1.4;
+        }
+
+        .logo {
+            max-width: 100%;
+            height: auto;
+            margin: 15px 0 25px 0;
+            border-radius: 8px;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .btn-form {
+            width: 100%;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-register {
+            background-color: #28a745;
+        }
+
+        .btn-inquiry {
+            background-color: #007bff;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>منظومة الشكاوى الموحدة لمركز ومدينة المنشاه</h1>
+
+        <!-- الصورة تحت العنوان -->
+        <img src="images/unnamed.jpg" alt="شعار منظومة الشكاوى" class="logo">
+
+        <div class="btn-group">
+            <!-- زر تسجيل شكوى -->
+            <form class="btn-form" action="register-complaint.html" method="get">
+                <button type="submit" class="btn btn-register">تسجيل شكوى</button>
+            </form>
+
+            <!-- زر استعلام عن شكوى -->
+            <form class="btn-form" action="inquiry.html" method="get">
+                <button type="submit" class="btn btn-inquiry">استعلام عن شكوى</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل شكوى - مركز المنشاه</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f7ff;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #1a5f8c;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #333;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        button:hover:not(:disabled) {
+            background: #218838;
+        }
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .required { color: red; }
+        #message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            display: none;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>تسجيل شكوى جديدة</h2>
+        <form id="complaintForm">
+            <div class="form-group">
+                <label>👤 الاسم <span class="required">*</span></label>
+                <input type="text" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label>🪪 الرقم القومي (14 رقم) <span class="required">*</span></label>
+                <input type="text" name="national_id" required minlength="14" maxlength="14" pattern="\d{14}">
+            </div>
+
+            <div class="form-group">
+                <label>📞 رقم الهاتف (010/011/012...) <span class="required">*</span></label>
+                <input type="tel" name="phone" required pattern="01[0-9]{9}">
+            </div>
+
+            <div class="form-group">
+                <label>📄 نوع الشكوى <span class="required">*</span></label>
+                <select name="complaint_type" required>
+                    <option value="">-- اختر --</option>
+                    <option value="خدمات الكهرباء">خدمات الكهرباء</option>
+                    <option value="المياه والصرف الصحي">المياه والصرف الصحي</option>
+                    <option value="النظافة">النظافة</option>
+                    <option value="الطرق والمرافق">الطرق والمرافق</option>
+                    <option value="أخرى">أخرى</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>📝 وصف الشكوى <span class="required">*</span></label>
+                <textarea name="description" required placeholder="اكتب تفاصيل الشكوى..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>🏢 الوحدة المحلية <span class="required">*</span></label>
+                <select name="local_unit" required>
+                    <option value="">-- اختر --</option>
+                    <option value="الدويرات">الدويرات</option>
+                    <option value="المنشاه">المنشاه</option>
+                    <option value="العوامر">العوامر</option>
+                    <option value="الروضة">الروضة</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>🏘️ القرية <span class="required">*</span></label>
+                <select name="village" required>
+                    <option value="">-- اختر --</option>
+                    <option value="الدويرات">الدويرات</option>
+                    <option value="بني عدي">بني عدي</option>
+                    <option value="الشراونة">الشراونة</option>
+                    <option value="المنير">المنير</option>
+                </select>
+            </div>
+
+            <button type="submit">إرسال الشكوى</button>
+            <div style="text-align: center; margin-top: 30px;">
+            <a href="index.html" style="display: inline-block; padding: 12px 24px; background: #28a745; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">العودة 🔁</a>
+            </div>
+        </form>
+
+        <div id="message"></div>
+    </div>
+
+    <script>
+        // ←←← الصق رابط Web App الخاص بك هنا ←←←
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyqMjxBfNit0ihi5D_Jd7tLYeqCzd9aqeC98bl_ixt3UUwgdT3PWfAh2tTYPucdl8E3GA/exec";
+
+        document.getElementById('complaintForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.submitter;
+            const msg = document.getElementById('message');
+
+            btn.disabled = true;
+            btn.textContent = 'جاري الإرسال...';
+
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            try {
+                // إرسال البيانات
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                // نفترض النجاح (بسبب no-cors)
+                msg.innerHTML = "✅ تم تسجيل شكواك بنجاح!<br>سيتم مراجعتها قريبًا.";
+                msg.className = "success";
+                msg.style.display = "block";
+                e.target.reset();
+
+            } catch (err) {
+                msg.innerHTML = "❌ حدث خطأ. حاول مرة أخرى.";
+                msg.className = "error";
+                msg.style.display = "block";
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "إرسال الشكوى";
+            }
+        });
+    </script>
+</body>
+</html>
