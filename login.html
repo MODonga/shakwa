@@ -89,14 +89,12 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const msg = document.getElementById('message');
-            
 
             // يمكنك تغيير هذه القيم أو ربطها بـ Web App لاحقًا
             if (username === "admin" && password === "123456") {
                 const now = new Date().getTime();
                 localStorage.setItem('isLoggedIn', 'true');
                 localStorage.setItem('lastActive', now.toString());
-                localStorage.setItem('isLoggedIn', 'true');
                 window.location.href = 'admin.html';
             } else {
                 msg.textContent = "❌ اسم المستخدم أو كلمة المرور غير صحيحة";

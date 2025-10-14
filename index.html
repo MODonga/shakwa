@@ -5,94 +5,229 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>منظومة الشكاوى الموحدة</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f8ff;
-            margin: 0;
-            padding: 0;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* الهيدر */
+        header {
+            background: #1a5f8c;
+            color: white;
+            padding: 15px 20px;
+            text-align: right;
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            font-weight: bold;
+        }
+
+        /* شريط الترحيب المتحرك */
+        .welcome-bar {
+            background: #e9ecef;
+            padding: 8px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .welcome-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: scrollWelcome 15s linear infinite;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        @keyframes scrollWelcome {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* المحتوى الرئيسي */
+        .main-content {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            text-align: center;
+            flex-wrap: wrap;
+            padding: 20px;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
-        .container {
+        .image-section, .text-section {
+            flex: 1;
+            min-width: 300px;
             background: white;
-            padding: 30px;
+            padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 500px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
 
-        h1 {
-            color: #1a5f8c;
-            margin-bottom: 20px;
-            font-size: 22px;
-            line-height: 1.4;
-        }
-
-        .logo {
-            max-width: 100%;
+        .image-section img {
+            width: 100%;
             height: auto;
-            margin: 15px 0 25px 0;
             border-radius: 8px;
+            object-fit: cover;
         }
 
+        .dynamic-text {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #1a5f8c;
+            margin: 15px 0;
+            min-height: 2em;
+        }
+
+        .description {
+            margin-top: 20px;
+            color: #555;
+            font-size: 1rem;
+        }
+
+        /* الأزرار */
         .btn-group {
             display: flex;
             flex-direction: column;
-            gap: 18px;
-        }
-
-        .btn-form {
-            width: 100%;
+            gap: 15px;
+            margin-top: 20px;
         }
 
         .btn {
-            width: 100%;
-            padding: 16px;
-            font-size: 18px;
+            padding: 14px;
+            font-size: 1.1rem;
             font-weight: bold;
             color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            text-decoration: none;
+            text-align: center;
+            transition: opacity 0.3s;
+            display: block;
         }
 
         .btn-register {
-            background-color: #28a745;
+            background: #28a745;
         }
 
         .btn-inquiry {
-            background-color: #007bff;
+            background: #007bff;
         }
 
         .btn:hover {
             opacity: 0.9;
         }
+
+        /* الفوتر */
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #6c757d;
+            font-size: 0.95rem;
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.4rem;
+            }
+
+            .main-content {
+                flex-direction: column;
+                padding: 15px;
+            }
+
+            .image-section, .text-section {
+                min-width: 100%;
+                padding: 20px;
+            }
+
+            .dynamic-text {
+                font-size: 1.2rem;
+            }
+
+            .btn {
+                font-size: 1.05rem;
+                padding: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.25rem;
+            }
+
+            .dynamic-text {
+                font-size: 1.1rem;
+            }
+
+            .welcome-text {
+                animation-duration: 20s;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- الهيدر -->
+    <header>
         <h1>منظومة الشكاوى الموحدة لمركز ومدينة المنشاه</h1>
+    </header>
 
-        <!-- الصورة تحت العنوان -->
-        <img src="images/unnamed.jpg" alt="شعار منظومة الشكاوى" class="logo">
+    <!-- شريط الترحيب المتحرك -->
+    <div class="welcome-bar">
+        <div class="welcome-text">مرحبا بكم في موقعنا • مرحبا بكم في موقعنا • مرحبا بكم في موقعنا •</div>
+    </div>
 
-        <div class="btn-group">
-            <!-- زر تسجيل شكوى -->
-            <form class="btn-form" action="register-complaint.html" method="get">
-                <button type="submit" class="btn btn-register">تسجيل شكوى</button>
-            </form>
+    <!-- المحتوى الرئيسي -->
+    <div class="main-content">
+        <!-- القسم الأيسر: الصورة -->
+        <div class="image-section">
+            <img src="images/unnamed.jpg" alt="شعار منظومة الشكاوى">
+        </div>
 
-            <!-- زر استعلام عن شكوى -->
-            <form class="btn-form" action="inquiry.html" method="get">
-                <button type="submit" class="btn btn-inquiry">استعلام عن شكوى</button>
-            </form>
+        <!-- القسم الأيمن: النص الديناميكي + الأزرار -->
+        <div class="text-section">
+            <p>يمكنك تقديم شكوى في:</p>
+            <div class="dynamic-text" id="dynamicTopic">الماء</div>
+            <p class="description">
+                سنسعى جاهدين لحل مشكلتك في أسرع وقت ممكن.  
+                اختر نوع الشكوى واملأ النموذج بدقة.
+            </p>
+
+            <div class="btn-group">
+                <a href="register-complaint.html" class="btn btn-register">تسجيل شكوى</a>
+                <a href="inquiry.html" class="btn btn-inquiry">استعلام عن شكوى</a>
+            </div>
         </div>
     </div>
+
+    <!-- الفوتر -->
+    <footer>
+        جميع الحقوق محفوظة © محمد السيد ابوالحمد
+    </footer>
+
+    <script>
+        // تغيير النص الديناميكي بين "الماء"، "الكهرباء"، "الزراعة"
+        const topics = ["الماء", "الكهرباء", "الزراعة"];
+        const dynamicElement = document.getElementById("dynamicTopic");
+        let index = 0;
+
+        setInterval(() => {
+            index = (index + 1) % topics.length;
+            dynamicElement.textContent = topics[index];
+        }, 3000); // يتغير كل 3 ثوانٍ
+    </script>
 </body>
 </html>

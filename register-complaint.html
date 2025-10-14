@@ -96,13 +96,42 @@
             <div class="form-group">
                 <label>📄 نوع الشكوى <span class="required">*</span></label>
                 <select name="complaint_type" required>
-                    <option value="">-- اختر --</option>
-                    <option value="خدمات الكهرباء">خدمات الكهرباء</option>
-                    <option value="المياه والصرف الصحي">المياه والصرف الصحي</option>
-                    <option value="النظافة">النظافة</option>
-                    <option value="الطرق والمرافق">الطرق والمرافق</option>
-                    <option value="أخرى">أخرى</option>
-                </select>
+    <option value="">-- اختر نوع الشكوى --</option>
+    
+    <!-- الخدمات الأساسية -->
+    <option value="خدمات الكهرباء">خدمات الكهرباء</option>
+    <option value="المياه والصرف الصحي">المياه والصرف الصحي</option>
+    <option value="الغاز الطبيعي">الغاز الطبيعي</option>
+    
+    <!-- البنية التحتية -->
+    <option value="الطرق والكباري">الطرق والكباري</option>
+    <option value="الإنارة العامة">الإنارة العامة</option>
+    <option value="الصرف الصحي والمجاري">الصرف الصحي والمجاري</option>
+    
+    <!-- النظافة والبيئة -->
+    <option value="النظافة العامة">النظافة العامة</option>
+    <option value="التخلص من المخلفات">التخلص من المخلفات</option>
+    <option value="التشجير والحدائق">التشجير والحدائق</option>
+    <option value="التلوث البيئي">التلوث البيئي</option>
+    
+    <!-- الزراعة والري -->
+    <option value="الري والموارد المائية">الري والموارد المائية</option>
+    <option value="الزراعة والأراضي الزراعية">الزراعة والأراضي الزراعية</option>
+    <option value="الثروة الحيوانية والداجنة">الثروة الحيوانية والداجنة</option>
+    
+    <!-- الخدمات الحكومية -->
+    <option value="الخدمات البلدية">الخدمات البلدية</option>
+    <option value="البناء والتشييد">البناء والتشييد</option>
+    <option value="الرصف والتمهيد">الرصف والتمهيد</option>
+    <option value="التعديات على الأراضي">التعديات على الأراضي</option>
+    
+    <!-- المرافق العامة -->
+    <option value="الاتصالات والإنترنت">الاتصالات والإنترنت</option>
+    <option value="النقل العام">النقل العام</option>
+    
+    <!-- أخرى -->
+    <option value="أخرى">أخرى</option>
+</select>
             </div>
 
             <div class="form-group">
@@ -114,21 +143,52 @@
                 <label>🏢 الوحدة المحلية <span class="required">*</span></label>
                 <select name="local_unit" required>
                     <option value="">-- اختر --</option>
+                    <option value="مركز المنشاة">مركز المنشاة</option>
+                    <option value="الزوك">الزوك</option>
+                    <option value="أولاد حمزة">أولاد حمزة</option>
+                    <option value="أولاد سلامة">أولاد سلامة</option>
                     <option value="الدويرات">الدويرات</option>
-                    <option value="المنشاه">المنشاه</option>
-                    <option value="العوامر">العوامر</option>
-                    <option value="الروضة">الروضة</option>
+                    <option value="العيساوية">العيساوية</option>
                 </select>
             </div>
 
             <div class="form-group">
                 <label>🏘️ القرية <span class="required">*</span></label>
                 <select name="village" required>
-                    <option value="">-- اختر --</option>
+                    <option value="">اختر القرية</option>
+                    <option value="أولاد جبارة">أولاد جبارة</option>
+                    <option value="أولاد حمزة">أولاد حمزة</option>
+                    <option value="أولاد سلامة">أولاد سلامة</option>
+                    <option value="أولاد علي">أولاد علي</option>
+                    <option value="الأحايوة غرب">الأحايوة غرب</option>
+                    <option value="الباجية">الباجية</option>
+                    <option value="البواريك">البواريك</option>
+                    <option value="البياضية بالناظر">البياضية بالناظر</option>
+                    <option value="الحريزات الشرقية">الحريزات الشرقية</option>
+                    <option value="الحريزات الغربية">الحريزات الغربية</option>
+                    <option value="الخنانسة">الخنانسة</option>
+                    <option value="الخنانسة غرب">الخنانسة غرب</option>
+                    <option value="الدناقلة">الدناقلة</option>
                     <option value="الدويرات">الدويرات</option>
-                    <option value="بني عدي">بني عدي</option>
-                    <option value="الشراونة">الشراونة</option>
-                    <option value="المنير">المنير</option>
+                    <option value="الرшаيدة">الرشايدة</option>
+                    <option value="الرويهب">الرويهب</option>
+                    <option value="الزارة">الزارة</option>
+                    <option value="الزوك الشرقية">الزوك الشرقية</option>
+                    <option value="الزوك الغربية">الزوك الغربية</option>
+                    <option value="السقرية">السقرية</option>
+                    <option value="الشهداء">الشهداء</option>
+                    <option value="الشواولة">الشواولة</option>
+                    <option value="العمايدة">العمايدة</option>
+                    <option value="العنبرية">العنبرية</option>
+                    <option value="الكوامل قبلي">الكوامل قبلي</option>
+                    <option value="النويرات">النويرات</option>
+                    <option value="الهماص">الهماص</option>
+                    <option value="جزيرة أولاد حمزة">جزيرة أولاد حمزة</option>
+                    <option value="جزيرة المنتصر">جزيرة المنتصر</option>
+                    <option value="خارفة المنشأة">خارفة المنشأة</option>
+                    <option value="روافع العيساوية">روافع العيساوية</option>
+                    <option value="عوامر العسيرات">عوامر العسيرات</option>
+                    <option value="كوم بدار">كوم بدار</option>
                 </select>
             </div>
 

@@ -38,7 +38,7 @@
             padding: 12px;
             border: 1px solid #ccc;
             border-radius: 6px;
-            font-size: 16px;
+            font-size: 16px; /* يمنع التكبير التلقائي في Safari/iOS */
             box-sizing: border-box;
         }
         button {
@@ -73,7 +73,12 @@
         }
 
         /* جدول النتائج */
+        #results {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
         table {
+            min-width: 600px;
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
@@ -150,11 +155,11 @@
             border: none;
             border-radius: 6px;
             cursor: pointer;
+            font-size: 16px;
         }
         .back-btn:hover {
             background: #5a6268;
         }
-        /* نمط جدول الإجراءات */
         .actions-table {
             width: 100%;
             border-collapse: collapse;
@@ -170,6 +175,43 @@
             font-family: monospace;
             width: 140px;
             white-space: nowrap;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            h2 {
+                font-size: 1.5rem;
+                margin-bottom: 20px;
+            }
+            .form-group label {
+                font-size: 0.95rem;
+            }
+            input, button, .back-btn {
+                font-size: 16px;
+            }
+            th, td {
+                padding: 10px 8px;
+                font-size: 0.9rem;
+            }
+            .modal-content {
+                width: 95%;
+                padding: 20px 15px;
+                margin: 10% auto;
+            }
+            .detail-label {
+                min-width: 130px;
+                font-size: 0.95rem;
+            }
+            .detail-value {
+                font-size: 0.95rem;
+            }
+            .actions-table td:first-child {
+                width: 120px;
+                font-size: 13px;
+            }
         }
     </style>
 </head>
@@ -193,16 +235,14 @@
 
             <button type="submit">بحث</button>
             <div style="text-align: center; margin-top: 30px;">
-            <a href="register-complaint.html" style="display: inline-block; padding: 12px 24px; background: #28a745; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">➕ تسجيل شكوى جديدة</a>
+                <a href="register-complaint.html" style="display: inline-block; padding: 12px 24px; background: #28a745; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">➕ تسجيل شكوى جديدة</a>
             </div>
         </form>
 
         <div id="message"></div>
-
         <div id="results" class="results"></div>
     </div>
 
-    <!-- نافذة التفاصيل -->
     <div id="detailModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">&times;</span>
@@ -213,7 +253,7 @@
     </div>
 
     <script>
-        // ✅ تأكد من عدم وجود مسافات في الرابط!
+        // ✅ تم إزالة المسافات الزايدة من الرابط
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyqMjxBfNit0ihi5D_Jd7tLYeqCzd9aqeC98bl_ixt3UUwgdT3PWfAh2tTYPucdl8E3GA/exec";
 
         let currentHeaders = [];
@@ -298,12 +338,10 @@
             }
         });
 
-        // عرض تفاصيل الشكوى الكاملة
         function showComplaintDetails(index) {
             const complaint = currentComplaints[index];
             let detailsHTML = '';
 
-            // عرض الأعمدة 0 إلى 9
             for (let i = 0; i < 10; i++) {
                 const label = currentHeaders[i] || `الحقل ${i+1}`;
                 const value = complaint[i] || 'غير متوفر';
@@ -315,103 +353,96 @@
                 `;
             }
 
-// معالجة العمود 10 (الإجراءات/التعليقات)
-let comments = [];
-const rawValue = complaint[10];
+            let comments = [];
+            const rawValue = complaint[10];
 
-if (rawValue) {
-    if (Array.isArray(rawValue)) {
-        // بالفعل مصفوفة (من السكربت المعدّل)
-        comments = rawValue;
-    } else if (typeof rawValue === 'string') {
-        try {
-            // محاولة تحليل النص كـ JSON
-            const parsed = JSON.parse(rawValue);
-            if (Array.isArray(parsed)) {
-                comments = parsed;
-            } else {
-                // إذا كان JSON لكن ليس مصفوفة (نادر)
-                comments = [rawValue];
+            if (rawValue) {
+                if (Array.isArray(rawValue)) {
+                    comments = rawValue;
+                } else if (typeof rawValue === 'string') {
+                    try {
+                        const parsed = JSON.parse(rawValue);
+                        if (Array.isArray(parsed)) {
+                            comments = parsed;
+                        } else {
+                            comments = [rawValue];
+                        }
+                    } catch (e) {
+                        comments = [rawValue];
+                    }
+                }
             }
-        } catch (e) {
-            // إذا فشل التحليل، نعتبره تعليقًا واحدًا
-            comments = [rawValue];
-        }
-    }
-}
 
-if (comments.length > 0) {
-    detailsHTML += `
-        <div class="detail-row">
-            <div class="detail-label">الإجراءات المتعلقة بالشكوى:</div>
-            <div class="detail-value">
-                <table class="actions-table">
-                    <tbody>
-                        ${comments.map(comment => {
-                            // دالة لتحويل الأرقام العربية إلى إنجليزية
-                            const toEnglishDigits = str => str.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d).toString());
-                            
-                            let clean = comment
-                                .replace(/،/g, ',')
-                                .replace(/\u200F/g, '') // إزالة علامات الاتجاه
-                                .replace(/\s+/g, ' ')
-                                .trim();
+            if (comments.length > 0) {
+                detailsHTML += `
+                    <div class="detail-row">
+                        <div class="detail-label">الإجراءات المتعلقة بالشكوى:</div>
+                        <div class="detail-value">
+                            <table class="actions-table">
+                                <tbody>
+                                    ${comments.map(comment => {
+                                        const toEnglishDigits = str => str.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d).toString());
+                                        let clean = comment
+                                            .replace(/،/g, ',')
+                                            .replace(/\u200F/g, '')
+                                            .replace(/\s+/g, ' ')
+                                            .trim();
 
-                            const lastDash = clean.lastIndexOf(' - ');
-                            if (lastDash === -1) {
-                                return `<tr><td colspan="2" style="padding:8px; border:1px solid #ddd;">${comment}</td></tr>`;
-                            }
+                                        const lastDash = clean.lastIndexOf(' - ');
+                                        if (lastDash === -1) {
+                                            return `<tr><td colspan="2" style="padding:8px; border:1px solid #ddd;">${comment}</td></tr>`;
+                                        }
 
-                            const textPart = clean.substring(0, lastDash);
-                            let dateTimeStr = clean.substring(lastDash + 3);
-                            dateTimeStr = toEnglishDigits(dateTimeStr);
+                                        const textPart = clean.substring(0, lastDash);
+                                        let dateTimeStr = clean.substring(lastDash + 3);
+                                        dateTimeStr = toEnglishDigits(dateTimeStr);
 
-                            let engDateStr = 'غير معروف';
-                            try {
-                                const dateMatch = dateTimeStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4}),\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([ص|م])/);
-                                if (dateMatch) {
-                                    const [, day, month, year, hour, minute, second = '0', period] = dateMatch;
-                                    let h = parseInt(hour, 10);
-                                    if (period === 'م' && h !== 12) h += 12;
-                                    if (period === 'ص' && h === 12) h = 0;
+                                        let engDateStr = 'غير معروف';
+                                        try {
+                                            const dateMatch = dateTimeStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4}),\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([ص|م])/);
+                                            if (dateMatch) {
+                                                const [, day, month, year, hour, minute, second = '0', period] = dateMatch;
+                                                let h = parseInt(hour, 10);
+                                                if (period === 'م' && h !== 12) h += 12;
+                                                if (period === 'ص' && h === 12) h = 0;
 
-                                    const dateObj = new Date(
-                                        parseInt(year, 10),
-                                        parseInt(month, 10) - 1,
-                                        parseInt(day, 10),
-                                        h,
-                                        parseInt(minute, 10),
-                                        parseInt(second, 10)
-                                    );
+                                                const dateObj = new Date(
+                                                    parseInt(year, 10),
+                                                    parseInt(month, 10) - 1,
+                                                    parseInt(day, 10),
+                                                    h,
+                                                    parseInt(minute, 10),
+                                                    parseInt(second, 10)
+                                                );
 
-                                    if (!isNaN(dateObj.getTime())) {
-                                        engDateStr = dateObj.toLocaleString('en-US');
-                                    }
-                                }
-                            } catch (e) {
-                                // silent
-                            }
+                                                if (!isNaN(dateObj.getTime())) {
+                                                    engDateStr = dateObj.toLocaleString('en-US');
+                                                }
+                                            }
+                                        } catch (e) {
+                                            // silent
+                                        }
 
-                            return `
-                                <tr>
-                                    <td>${engDateStr}</td>
-                                    <td>${textPart}</td>
-                                </tr>
-                            `;
-                        }).join('')}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    `;
-} else {
-    detailsHTML += `
-        <div class="detail-row">
-            <div class="detail-label">الإجراءات المتعلقة بالشكوى:</div>
-            <div class="detail-value"><em>لا توجد إجراءات مسجلة</em></div>
-        </div>
-    `;
-}
+                                        return `
+                                            <tr>
+                                                <td>${engDateStr}</td>
+                                                <td>${textPart}</td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            } else {
+                detailsHTML += `
+                    <div class="detail-row">
+                        <div class="detail-label">الإجراءات المتعلقة بالشكوى:</div>
+                        <div class="detail-value"><em>لا توجد إجراءات مسجلة</em></div>
+                    </div>
+                `;
+            }
 
             document.getElementById('complaintDetails').innerHTML = detailsHTML;
             document.getElementById('detailModal').style.display = 'block';

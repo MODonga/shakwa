@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة التحكم - جميع الشكاوى</title>
     <style>
-        /* نفس CSS من ملفك الأصلي */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f8f9fa;
@@ -35,7 +34,14 @@
         .error { background: #f8d7da; color: #721c24; }
         .success { background: #d4edda; color: #155724; }
 
-        table {
+        /* جعل الجدول متجاوبًا */
+        #complaintsTable {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #complaintsTable table {
+            min-width: 600px;
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
@@ -110,6 +116,7 @@
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
+            font-size: 1rem;
         }
         .comment-section {
             margin-top: 20px;
@@ -151,11 +158,58 @@
             text-align: center;
             display: none;
         }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            h2 {
+                font-size: 1.5rem;
+                margin-bottom: 20px;
+            }
+            th, td {
+                padding: 10px 8px;
+                font-size: 0.9rem;
+            }
+            .modal-content {
+                width: 95%;
+                padding: 20px 15px;
+                margin: 10% auto;
+            }
+            .detail-label {
+                min-width: 130px;
+                font-size: 0.95rem;
+            }
+            .detail-value {
+                font-size: 0.95rem;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>لوحة التحكم - جميع الشكاوى</h2>
+        
+        <!-- شريط التحميل المحسن -->
+        <div id="loadingBar" style="display: none; margin: 20px 0;">
+            <div style="
+                height: 6px;
+                background: #e0e0e0;
+                border-radius: 3px;
+                overflow: hidden;
+            ">
+                <div id="loadingProgress" style="
+                    height: 100%;
+                    width: 0%;
+                    background: linear-gradient(90deg, #1a5f8c, #28a745);
+                    border-radius: 3px;
+                    transition: width 0.3s ease;
+                "></div>
+            </div>
+            <p style="text-align: center; color: #6c757d; margin-top: 8px; font-size: 14px;">جارٍ تحميل البيانات...</p>
+        </div>
+
         <div id="message"></div>
         <div id="complaintsTable"></div>
     </div>
@@ -171,37 +225,34 @@
     </div>
 
     <script>
-// ✅ تأكد من عدم وجود مسافات في الرابط!
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyqMjxBfNit0ihi5D_Jd7tLYeqCzd9aqeC98bl_ixt3UUwgdT3PWfAh2tTYPucdl8E3GA/exec";
+        // ✅ تم إزالة المسافات من الرابط!
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyqMjxBfNit0ihi5D_Jd7tLYeqCzd9aqeC98bl_ixt3UUwgdT3PWfAh2tTYPucdl8E3GA/exec";
 
-// دالة التحقق من انتهاء الجلسة
-function checkSessionExpiry() {
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    const lastActive = localStorage.getItem('lastActive');
-    const now = new Date().getTime();
-    const SESSION_TIMEOUT = 10 * 60 * 1000; // 30 دقيقة
+        function checkSessionExpiry() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            const lastActive = localStorage.getItem('lastActive');
+            const now = new Date().getTime();
+            const SESSION_TIMEOUT = 10 * 60 * 1000;
 
-    if (!isLoggedIn || !lastActive) {
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('lastActive');
-        return false;
-    }
+            if (!isLoggedIn || !lastActive) {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('lastActive');
+                return false;
+            }
 
-    if (now - parseInt(lastActive) > SESSION_TIMEOUT) {
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('lastActive');
-        return false;
-    }
+            if (now - parseInt(lastActive) > SESSION_TIMEOUT) {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('lastActive');
+                return false;
+            }
 
-    // تجديد وقت آخر نشاط
-    localStorage.setItem('lastActive', now.toString());
-    return true;
-}
+            localStorage.setItem('lastActive', now.toString());
+            return true;
+        }
 
-// التحقق من الجلسة عند تحميل الصفحة
-if (!checkSessionExpiry()) {
-    window.location.href = 'login.html';
-}
+        if (!checkSessionExpiry()) {
+            window.location.href = 'login.html';
+        }
 
         let allComplaints = [];
         let headers = [];
@@ -211,10 +262,29 @@ if (!checkSessionExpiry()) {
         async function loadAllComplaints() {
             const msg = document.getElementById('message');
             const tableDiv = document.getElementById('complaintsTable');
+            const loadingBar = document.getElementById('loadingBar');
+            const progress = document.getElementById('loadingProgress');
+
+            loadingBar.style.display = 'block';
+            progress.style.width = '0%';
+            tableDiv.innerHTML = '';
+            msg.style.display = 'none';
+
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 90) {
+                    clearInterval(interval);
+                } else {
+                    width += 2;
+                    progress.style.width = width + '%';
+                }
+            }, 30);
 
             try {
                 const response = await fetch(`${WEB_APP_URL}?action=getAll`);
                 const data = await response.json();
+
+                progress.style.width = '100%';
 
                 if (data.success && data.complaints) {
                     allComplaints = data.complaints;
@@ -234,18 +304,18 @@ if (!checkSessionExpiry()) {
                             if (i === 1 && cell) cell = new Date(cell).toLocaleString('ar-EG');
                             if (i === 9) {
                                 cell = (() => {
-                                        let color;
-                                        if (cell === 'جارى العمل') {
-                                            color = '#ffc107'; // أو '#ffc107' للون أصفر ذهبي أنسب
-                                        } else if (cell === 'تم الحل') {
-                                            color = 'green';
-                                        } else if (cell === 'مغلقة') {
-                                            color = 'red';
-                                        } else {
-                                            color = 'inherit'; // الافتراضي إذا كانت حالة غير معروفة
-                                        }
-                                        return `<span style="color: ${color}; font-weight: bold;">${cell}</span>`;
-                                    })();
+                                    let color;
+                                    if (cell === 'جارى العمل') {
+                                        color = '#ffc107';
+                                    } else if (cell === 'تم الحل') {
+                                        color = 'green';
+                                    } else if (cell === 'مغلقة') {
+                                        color = 'red';
+                                    } else {
+                                        color = 'inherit';
+                                    }
+                                    return `<span style="color: ${color}; font-weight: bold;">${cell}</span>`;
+                                })();
                             }
                             html += `<td>${cell}</td>`;
                         });
@@ -257,9 +327,15 @@ if (!checkSessionExpiry()) {
                     tableDiv.innerHTML = "<p>لا توجد شكاوى.</p>";
                 }
             } catch (err) {
+                progress.style.width = '100%';
                 msg.innerHTML = "❌ خطأ في تحميل البيانات";
                 msg.className = "error";
                 msg.style.display = "block";
+                tableDiv.innerHTML = "";
+            } finally {
+                setTimeout(() => {
+                    loadingBar.style.display = 'none';
+                }, 300);
             }
         }
 
@@ -294,82 +370,67 @@ if (!checkSessionExpiry()) {
                 </div>
 
                 <div class="comment-section">
-                    <div class="detail-label">الإجراءات المتعلقة بالشكوى:   </div>
-<div id="commentsList">
-    ${(complaint[10] || []).length 
-        ? `
-            <table style="width:100%; border-collapse: collapse; margin-top:10px; font-size:14px;">
-                
-                <tbody>
-                    ${(complaint[10] || []).map(comment => {
-                        // دالة لتحويل الأرقام العربية إلى إنجليزية
-                        const toEnglishDigits = str => str.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d).toString());
-                        
-                        // تنظيف النص: استبدال الفاصلة العربية وتوحيد المسافات
-                        let clean = comment
-                            .replace(/،/g, ',')          // "،" → ","
-                            .replace(/\u200F/g, '')      // إزالة علامات الاتجاه (مثل ‏)
-                            .replace(/\s+/g, ' ')        // توحيد المسافات
-                            .trim();
+                    <div class="detail-label">الإجراءات المتعلقة بالشكوى:</div>
+                    <div id="commentsList">
+                        ${(complaint[10] || []).length 
+                            ? `
+                                <table style="width:100%; border-collapse: collapse; margin-top:10px; font-size:14px;">
+                                    <tbody>
+                                        ${(complaint[10] || []).map(comment => {
+                                            const toEnglishDigits = str => str.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d).toString());
+                                            let clean = comment
+                                                .replace(/،/g, ',')
+                                                .replace(/\u200F/g, '')
+                                                .replace(/\s+/g, ' ')
+                                                .trim();
 
-                        // محاولة استخراج الجزء الزمني (نفترض أنه بعد آخر " - ")
-                        const lastDash = clean.lastIndexOf(' - ');
-                        if (lastDash === -1) {
-                            return `<tr><td colspan="2" style="padding:10px; border:1px solid #ddd;">${comment}</td></tr>`;
+                                            const lastDash = clean.lastIndexOf(' - ');
+                                            if (lastDash === -1) {
+                                                return `<tr><td colspan="2" style="padding:10px; border:1px solid #ddd;">${comment}</td></tr>`;
+                                            }
+
+                                            const textPart = clean.substring(0, lastDash);
+                                            let dateTimeStr = clean.substring(lastDash + 3);
+                                            dateTimeStr = toEnglishDigits(dateTimeStr);
+
+                                            let engDateStr = 'غير معروف';
+                                            try {
+                                                const dateMatch = dateTimeStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4}),\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([ص|م])/);
+                                                if (dateMatch) {
+                                                    const [, day, month, year, hour, minute, second = '0', period] = dateMatch;
+                                                    let h = parseInt(hour, 10);
+                                                    if (period === 'م' && h !== 12) h += 12;
+                                                    if (period === 'ص' && h === 12) h = 0;
+
+                                                    const dateObj = new Date(
+                                                        parseInt(year, 10),
+                                                        parseInt(month, 10) - 1,
+                                                        parseInt(day, 10),
+                                                        h,
+                                                        parseInt(minute, 10),
+                                                        parseInt(second, 10)
+                                                    );
+
+                                                    if (!isNaN(dateObj.getTime())) {
+                                                        engDateStr = dateObj.toLocaleString('en-US');
+                                                    }
+                                                }
+                                            } catch (e) {
+                                                engDateStr = 'خطأ في التحليل';
+                                            }
+
+                                            return `
+                                                <tr>
+                                                    <td style="padding:10px; border:1px solid #ddd; direction: ltr; font-family: monospace; width: 100px; white-space: nowrap;">${engDateStr}</td>
+                                                    <td style="padding:10px; border:1px solid #ddd;">${textPart}</td>
+                                                </tr>
+                                            `;
+                                        }).join('')}
+                                    </tbody>
+                                </table>`
+                            : '<em>لا توجد تعليقات</em>'
                         }
-
-                        const textPart = clean.substring(0, lastDash);
-                        let dateTimeStr = clean.substring(lastDash + 3); // تجاوز " - "
-
-                        // تحويل الأرقام
-                        dateTimeStr = toEnglishDigits(dateTimeStr);
-
-                        // محاولة استخراج يوم/شهر/سنة وساعة/دقيقة
-                        let engDateStr = 'غير معروف';
-                        try {
-                            // نمط متوقع: "13/10/2025, 7:26:59 م"
-                            const dateMatch = dateTimeStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4}),\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([ص|م])/);
-                            
-                            if (dateMatch) {
-                                const [, day, month, year, hour, minute, second = '0', period] = dateMatch;
-                                
-                                let h = parseInt(hour, 10);
-                                if (period === 'م' && h !== 12) h += 12;
-                                if (period === 'ص' && h === 12) h = 0;
-
-                                const dateObj = new Date(
-                                    parseInt(year, 10),
-                                    parseInt(month, 10) - 1, // الشهر يبدأ من 0
-                                    parseInt(day, 10),
-                                    h,
-                                    parseInt(minute, 10),
-                                    parseInt(second, 10)
-                                );
-
-                                if (isNaN(dateObj.getTime())) {
-                                    engDateStr = 'Invalid Date';
-                                } else {
-                                    engDateStr = dateObj.toLocaleString('en-US');
-                                }
-                            } else {
-                                engDateStr = 'تنسيق غير مدعوم';
-                            }
-                        } catch (e) {
-                            engDateStr = 'خطأ في التحليل';
-                        }
-
-                        return `
-                            <tr>
-                                <td style="padding:10px; border:1px solid #ddd; direction: ltr; font-family: monospace; width: 100px; white-space: nowrap;">${engDateStr}</td>
-                                <td style="padding:10px; border:1px solid #ddd;">${textPart}</td>
-                            </tr>
-                        `;
-                    }).join('')}
-                </tbody>
-            </table>`
-        : '<em>لا توجد تعليقات</em>'
-    }
-</div>
+                    </div>
                     
                     <div style="margin-top:15px;">
                         <textarea id="newComment" placeholder="أضف تعليقًا جديدًا..." rows="3"></textarea>
@@ -383,14 +444,8 @@ if (!checkSessionExpiry()) {
             document.getElementById('editSection').innerHTML = editHTML;
             document.getElementById('detailModal').style.display = 'block';
 
-            // ربط الأحداث
-            document.getElementById('saveStatusBtn').addEventListener('click', () => {
-                updateStatus(rowId, index);
-            });
-
-            document.getElementById('addCommentBtn').addEventListener('click', () => {
-                addComment(rowId, index);
-            });
+            document.getElementById('saveStatusBtn').onclick = () => updateStatus(rowId, index);
+            document.getElementById('addCommentBtn').onclick = () => addComment(rowId, index);
         }
 
         async function updateStatus(rowId, complaintIndex) {
@@ -398,7 +453,6 @@ if (!checkSessionExpiry()) {
             const msgDiv = document.getElementById('statusMessage');
             const status = document.getElementById('statusSelect').value;
 
-            // تعطيل الزر ومنع التكرار
             btn.disabled = true;
             msgDiv.style.display = 'none';
 
@@ -410,7 +464,6 @@ if (!checkSessionExpiry()) {
                     msgDiv.innerHTML = "✅ تم تحديث الحالة بنجاح";
                     msgDiv.className = "action-message success";
                     msgDiv.style.display = "block";
-                    // تحديث الصفحة بعد 1.5 ثانية
                     setTimeout(() => location.reload(), 1500);
                 } else {
                     throw new Error("فشل التحديث");
@@ -419,7 +472,7 @@ if (!checkSessionExpiry()) {
                 msgDiv.innerHTML = "❌ فشل تحديث الحالة";
                 msgDiv.className = "action-message error";
                 msgDiv.style.display = "block";
-                btn.disabled = false; // إعادة التفعيل عند الفشل
+                btn.disabled = false;
             }
         }
 
@@ -451,7 +504,7 @@ if (!checkSessionExpiry()) {
                 msgDiv.innerHTML = "❌ فشل إضافة التعليق";
                 msgDiv.className = "action-message error";
                 msgDiv.style.display = "block";
-                btn.disabled = false; // إعادة التفعيل عند الفشل
+                btn.disabled = false;
             }
         }
 
