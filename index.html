@@ -32,32 +32,32 @@
         }
 
         /* شريط الترحيب المتحرك */
-        .welcome-bar {
-            background: #e9ecef;
-            padding: 8px 0;
-            overflow: hidden;
-            white-space: nowrap;
-            position: relative;
-        }
+.welcome-bar {
+  background: #e9ecef;
+  padding: 8px 0;
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative; /* مهم */
+  height: 40px; /* ضيف ارتفاع لو محتاج */
+}
 
-        .welcome-text {
-            display: inline-block;
-            position: absolute;
-            left: -100%;
-            animation: scrollWelcome 15s linear infinite;
-            font-weight: bold;
-            color: #495057;
-        }
+.welcome-text {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) translateX(-100%); /* يبدأ برا الشمال ووسط الشريط عموديًا */
+  white-space: nowrap;
+  animation: scrollWelcome 25s linear infinite;
+  font-weight: bold;
+  color: #495057;
+  z-index: 2; /* لو حاجة ممكن تكون فوقه */
+  font-size: 18px; /* تأكد إنه مش صغير قوي */
+}
 
-        /* 🔄 التحريك من اليسار لليمين */
-        @keyframes scrollWelcome {
-            0% {
-                transform: translateX(0);
-            }
-            100% {
-                transform: translateX(200%);
-            }
-        }
+@keyframes scrollWelcome {
+  from { transform: translateY(-50%) translateX(-100%); }
+  to   { transform: translateY(-50%) translateX(100%); }
+}
 
 
         /* المحتوى الرئيسي */
@@ -194,7 +194,7 @@
 
     <!-- شريط الترحيب المتحرك -->
     <div class="welcome-bar">
-        <div class="welcome-text">أهلاً وسهلاً بك في منظومة الشكاوى 👋</div>
+        <div class="welcome-text">أهلاً وسهلاً بك في منظومة الشكاوى الموحدة لمركز ومدينة المنشاه 👋  أهلاً وسهلاً بك في منظومة الشكاوى الموحدة لمركز ومدينة المنشاه 👋  أهلاً وسهلاً بك في منظومة الشكاوى الموحدة لمركز ومدينة المنشاه 👋  أهلاً وسهلاً بك في منظومة الشكاوى الموحدة لمركز ومدينة المنشاه 👋  </div>
     </div>
 
 
